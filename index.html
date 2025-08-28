@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+    <title>SYSTEM FAILURE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        
+        html, body {
+            font-family: 'VT323', monospace;
+            overflow: hidden;
+            background-color: #000;
+            color: #ff0000;
+            overscroll-behavior: contain;
+        }
+
+        #forced-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #000;
+            z-index: 10000;
+            display: flex; align-items: center; justify-content: center; text-align: center;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% { border-color: #ff0000; box-shadow: 0 0 30px #ff0000; }
+            50% { border-color: #ffff00; box-shadow: 0 0 40px #ffff00; }
+        }
+        #error-box { animation: pulse-border 1.5s infinite; }
+
+        #screen-flash {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: white; z-index: 9998;
+            display: none;
+            animation: flash 0.2s forwards;
+        }
+        @keyframes flash {
+            from { opacity: 1; } to { opacity: 0; }
+        }
+
+        .glitch-text { position: relative; }
+        .glitch-text::before, .glitch-text::after {
+            content: attr(data-text);
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; overflow: hidden;
+        }
+        .glitch-text::before {
+            left: 4px; text-shadow: -4px 0 #00ffff;
+            animation: glitch-anim 1s infinite linear alternate-reverse;
+        }
+        .glitch-text::after {
+            left: -4px; text-shadow: -4px 0 #ff00ff;
+            animation: glitch-anim 1.5s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim {
+            0% { clip-path: inset(10% 0 90% 0); } 100% { clip-path: inset(75% 0 5% 0); }
+        }
+        @keyframes flicker {
+            0%, 100% { opacity: 1; } 50% { opacity: 0.5; }
+        }
+        .flicker-screen { animation: flicker 0.05s infinite; }
+        #encryption-log {
+            height: 120px; overflow-y: hidden; border: 2px solid #ff0000;
+            background-color: #050505; padding: 8px; text-align: left;
+            font-size: 16px; color: #00ff00; box-shadow: 0 0 20px #ff0000 inset;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LAYAR PAKSAAN -->
+    <div id="forced-overlay">
+        <div id="error-box" class="bg-blue-900 p-6 border-4 border-red-500 max-w-lg text-white">
+            <h1 class="text-4xl mb-4">KESALAHAN SISTEM KRITIS</h1>
+            <p class="text-lg mb-8">Kernel memori rusak. Data berisiko hilang permanen. Prosedur perbaikan darurat harus dijalankan. Sistem tidak akan merespon hingga tindakan diambil.</p>
+            <button id="start-prank-button" class="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-4 px-8 text-2xl animate-pulse">
+                JALANKAN PROSEDUR PERBAIKAN
+            </button>
+        </div>
+    </div>
+
+    <!-- EFEK KILAT PUTIH -->
+    <div id="screen-flash"></div>
+
+    <!-- KONTEN RANSOMWARE (Tersembunyi) -->
+    <div id="ransomware-container" class="hidden">
+        <div class="relative w-full h-screen flex items-center justify-center p-4 flicker-screen">
+            <div class="w-full max-w-md mx-auto flex flex-col space-y-4 text-center">
+                <h1 class="text-6xl font-bold glitch-text" data-text="ANDA DIBAJAK">
+                    ANDA DIBAJAK
+                </h1>
+                <p class="text-xl text-gray-300">
+                    Perbaikan GAGAL. Perangkat Anda kini di bawah kendali kami. Menentang akan mengakibatkan penghapusan data total.
+                </p>
+                <div id="encryption-log"></div>
+                <div class="bg-black p-3 border-2 border-red-700">
+                    <h2 class="text-3xl text-yellow-400 mb-2">PENGHAPUSAN DATA DALAM:</h2>
+                    <div id="countdown" class="text-7xl font-bold text-red-600">
+                        00:01:00
+                    </div>
+                </div>
+                <div id="prank-message" class="hidden pt-10 text-center">
+                    <h2 class="text-6xl font-bold text-green-400 mb-4">UDAH PANIK BELUM?</h2>
+                    <p class="text-2xl text-white">Wkwkwk, cuma prank kok! HP kamu aman 100%. 🤣</p>
+                    <button onclick="window.location.reload()" class="mt-6 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded text-lg">
+                        Ulangi Lagi?
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const startButton = document.getElementById('start-prank-button');
+        const forcedOverlay = document.getElementById('forced-overlay');
+        const ransomwareContainer = document.getElementById('ransomware-container');
+        const screenFlash = document.getElementById('screen-flash');
+        const countdownElement = document.getElementById('countdown');
+        const prankMessage = document.getElementById('prank-message');
+        const logElement = document.getElementById('encryption-log');
+        const ransomwareContent = document.querySelector('#ransomware-container .w-full');
+
+        const fakeFiles = [ "kontak.vcf", "DCIM/foto_liburan.jpg", "WhatsApp/Databases/msgstore.db.crypt14", "Downloads/cv_lamaran.pdf", "data/system/accounts.db" ];
+
+        async function startPrank() {
+            // 1. Tampilkan kilat putih dan sembunyikan layar paksaan
+            screenFlash.style.display = 'block';
+            forcedOverlay.style.display = 'none';
+
+            // 2. Mulai audio SEGERA untuk efek kejut maksimal
+            await Tone.start();
+            const noise = new Tone.Noise("white").toDestination();
+            noise.volume.value = -10; // Cukup keras
+            const filter = new Tone.AutoFilter("2n").toDestination().start();
+            const alarm = new Tone.Oscillator("A4", "square").connect(filter).toDestination();
+            alarm.volume.value = -5;
+            
+            // Mainkan suara
+            noise.start();
+            alarm.start();
+            
+            // 3. Masuk ke mode layar penuh
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(err => {});
+            }
+
+            // 4. JEBAKAN TOMBOL KEMBALI
+            history.pushState(null, "", location.href);
+            window.addEventListener("popstate", () => {
+                history.pushState(null, "", location.href);
+            });
+
+            // 5. Tampilkan konten ransomware setelah kilat selesai
+            setTimeout(() => {
+                ransomwareContainer.classList.remove('hidden');
+            }, 200);
+
+            // 6. Mulai simulasi enkripsi
+            let fileIndex = 0;
+            const encryptionInterval = setInterval(() => {
+                if (fileIndex < fakeFiles.length) {
+                    logElement.innerHTML += `[ENKRIPSI] /storage/emulated/0/${fakeFiles[fileIndex]}... OK<br>`;
+                    logElement.scrollTop = logElement.scrollHeight;
+                    fileIndex++;
+                } else {
+                    logElement.innerHTML += `<span class="text-yellow-400">[SELESAI] SEMUA DATA TERKUNCI</span>`;
+                    clearInterval(encryptionInterval);
+                }
+            }, 600);
+
+            // 7. Mulai hitungan mundur (1 menit)
+            let duration = 60;
+            const timer = setInterval(() => {
+                duration--;
+                const seconds = duration.toString().padStart(2, '0');
+                countdownElement.textContent = `00:00:${seconds}`;
+
+                if (duration <= 0) {
+                    clearInterval(timer);
+                    // Hentikan semua suara
+                    noise.stop();
+                    alarm.stop();
+                    
+                    // Tampilkan pesan prank
+                    Array.from(ransomwareContent.children).forEach(child => {
+                        if(child.id !== 'prank-message') child.classList.add('hidden');
+                    });
+                    prankMessage.classList.remove('hidden');
+                }
+            }, 1000);
+        }
+
+        startButton.addEventListener('click', startPrank);
+        document.addEventListener('contextmenu', e => e.preventDefault());
+    </script>
+</body>
+  </html>
